@@ -1,0 +1,19 @@
+pip install -r requirements.txt
+
+Detect
+--weight runs/fruits/exp3/weights/best.pt --source data/valData
+--weight runs/fruits/exp3/weights/best.pt --source 0
+--weight runs/fruits/exp3/weights/best.pt --source http://admin:admin@192.168.31.20:8081
+--weight best.pt --source E:\\CDUT\\CNN\\valData
+--weight runs/fruits_resnet/exp4/weights/best.pt --source data/valData
+
+Results
+tensorboard --logdir runs
+
+
+
+
+
+Train
+--weights best.pt --data data\\fruits_add.yaml --device 0 --project runs\\fruits_add --workers 1 --batch-size 8
+--weights best.pt --cfg models\\yolo_resnet_18.yaml --data data\\fruits.yaml --device 0 --project runs\\test --workers 1 --batch-size -1
