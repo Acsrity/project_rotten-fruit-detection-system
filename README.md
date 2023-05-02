@@ -4,7 +4,7 @@ This is a target detection system for fresh and decaying fruit based on YOLOv5 i
  
 ## Getting Started
  
-The project requires access to the rotten_freshFruitsDeSystem folder to install the dependencies using the cmd. You will also need to install the cuda and pytorch environments in advance
+The project requires access to the rotten_freshFruitsDeSystem folder to install the dependencies using the cmd. Also need to install the cuda and pytorch environments in advance
  
 ### Requirements
  
