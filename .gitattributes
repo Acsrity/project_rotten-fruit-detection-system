@@ -1,6 +1,6 @@
-yolo_mobileNet.pt filter=lfs diff=lfs merge=lfs -text
-yolo_resnet50.pt filter=lfs diff=lfs merge=lfs -text
-yolo_resnet18.pt filter=lfs diff=lfs merge=lfs -text
+MobileNetV3_yolo.pt filter=lfs diff=lfs merge=lfs -text
+ResnetLarge_yolo.pt filter=lfs diff=lfs merge=lfs -text
+ResnetTiny_yolo.pt filter=lfs diff=lfs merge=lfs -text
 yolov7.zip filter=lfs diff=lfs merge=lfs -text
 Resnet.zip filter=lfs diff=lfs merge=lfs -text
 *.pt filter=lfs diff=lfs merge=lfs -text
