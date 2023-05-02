@@ -42,10 +42,10 @@ class Detect:
         if (self.model == None):
             self.loadModel()
         if type != 0:
-            data = self.loader(imgPath, 1)
+            data = self.dataLoader(imgPath, 1)
         else:
             source = check_file(imgPath)
-            data = self.loader(source)
+            data = self.dataLoader(source)
         self.model.warmup(imgsz=(1 if self.pt or self.model.triton else self.bs, 3, *self.imgsz))  # warmup
         seen, windows, dt = 0, [], (Profile(), Profile(), Profile())
         for path, im, im0s, vid_cap, s in data:
@@ -100,26 +100,26 @@ class Detect:
                 # Save results (image with detections)
                 if data.mode == 'image':
                     cv2.imwrite(save_path, im0)
-                else:  # 'video' or 'stream'
-                    if self.vid_path[i] != save_path:  # new video
-                        self.vid_path[i] = save_path
-                        if isinstance(self.vid_writer[i], cv2.VideoWriter):
-                            self.vid_writer[i].release()  # release previous video writer
-                        if vid_cap:  # video
-                            fps = vid_cap.get(cv2.CAP_PROP_FPS)
-                            w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                            h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                        else:  # stream
-                            fps, w, h = 30, im0.shape[1], im0.shape[0]
-                        save_path = str(Path(save_path).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
-                        self.vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
-                    self.vid_writer[i].write(im0)
+                # else:  # 'video' or 'stream'
+                #     if self.vid_path[i] != save_path:  # new video
+                #         self.vid_path[i] = save_path
+                #         if isinstance(self.vid_writer[i], cv2.VideoWriter):
+                #             self.vid_writer[i].release()  # release previous video writer
+                #         if vid_cap:  # video
+                #             fps = vid_cap.get(cv2.CAP_PROP_FPS)
+                #             w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                #             h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                #         else:  # stream
+                #             fps, w, h = 30, im0.shape[1], im0.shape[0]
+                #         save_path = str(Path(save_path).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
+                #         self.vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
+                #     self.vid_writer[i].write(im0)
 
             # Print time (inference-only)
             LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[1].dt * 1E3:.1f}ms")
         return im0, res
 
-    def loader(self, source, type=0):
+    def dataLoader(self, source, type=0):
         if type == 0:
             dataset = LoadImages(source, img_size=self.imgsz, stride=self.stride, auto=self.pt, vid_stride=1)
         else:
@@ -127,7 +127,7 @@ class Detect:
         self.vid_path, self.vid_writer = [None] * self.bs, [None] * self.bs
         return dataset
 
-    def loadModel(self, weights='results/yolo_resnet50.pt', imgsz=(640, 640)):
+    def loadModel(self, weights='results/ResnetLarge_yolo.pt', imgsz=(640, 640)):
         weights = ROOT / weights
         self.weights = weights
         self.model = DetectMultiBackend(weights=weights, device=select_device('0'), dnn=False, fp16=False)

@@ -3,7 +3,7 @@ import cv2 as cv
 # import os
 # import numpy as np
 from PyQt5.QtCore import QTimer, Qt
-from PyQt5.QtGui import QImage, QPixmap, QColor
+from PyQt5.QtGui import QImage, QPixmap, QColor, QPalette, QBrush
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QGraphicsDropShadowEffect
 
 from ui import Ui_MainWindow
@@ -23,6 +23,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         self.shadow.setOffset(0, 0)
         self.frame.setGraphicsEffect(self.shadow)  # 为frame设定阴影效果
 
+
         self.my_timer = QTimer()  # 创建定时器
         self.btn_status = False
 
@@ -34,6 +35,8 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         self.videoBtn.clicked.connect(self.startVideo)
         self.modelsCombo.currentIndexChanged[str].connect(self.changeModels)
         # Load YOLOv5 detector
+        self.imgLabel.hide()
+        self.resultLabel.hide()
         self.detector = Detect()
         self.imgs = []
         self.cap = 0
@@ -59,18 +62,20 @@ class MyWindow(QMainWindow, Ui_MainWindow):
 
     # 下拉菜单更改模型触发事件
     def changeModels(self, context):
-        if (context == 'Resnet50'):
+        if (context == 'ResnetLarge'):
             self.detector.loadModel()
         elif (context == 'MobileNetV3'):
-            self.detector.loadModel(weights='results/yolo_mobileNet.pt')
-        elif (context == 'Resnet18'):
-            self.detector.loadModel(weights='results/yolo_resnet18.pt')
+            self.detector.loadModel(weights='results/MobileNetV3_yolo.pt')
+        elif (context == 'ResnetTiny'):
+            self.detector.loadModel(weights='results/ResnetTiny_yolo.pt')
         else:
             print('Wrong! not found models')
 
     # 点击选择图片触发事件
     def select_image(self):
         # Show file dialog to select an image file
+        if self.btn_status:
+            self.startVideo()
         file_path, _ = QFileDialog.getOpenFileName(self, 'Select image file', '', 'Images (*.png *.xpm *.jpg)')
         if file_path:
             # Detect objects in the image
@@ -85,7 +90,9 @@ class MyWindow(QMainWindow, Ui_MainWindow):
             # 加载图片，并设定图片大小
             img_dis = QPixmap(img_dis).scaled(w, h)
             # 显示图片
+            self.imgLabel.show()
             self.imgLabel.setPixmap(img_dis)
+            self.resultLabel.show()
             self.resultLabel.setText(resStr)
 
     # 点击 打开/关闭 摄像头触发事件
@@ -93,12 +100,13 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         if self.btn_status:
             print('close camera')
             self.btn_status = False
-            self.resultLabel.show()
+            self.imgLabel.hide()
         else:
             print('open camera')
             self.btn_status = True
             self.resultLabel.setText('')
             self.resultLabel.hide()
+            self.imgLabel.show()
 
         if self.btn_status:
             self.videoBtn.setText('Stop')

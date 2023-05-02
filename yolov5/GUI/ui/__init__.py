@@ -12,13 +12,18 @@ from PyQt5.QtGui import QFont
 
 from PyQt5.QtWidgets import *
 
+import bg_rc
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(1101, 737)
         MainWindow.setAutoFillBackground(False)
-        MainWindow.setStyleSheet(u"background-color:rgb(255, 255, 255)")
+        MainWindow.setStyleSheet(u"background-color:rgb(255, 255, 255);\n"
+"background-image: url(:/bg/bg.jpg);\n"
+"\n"
+"")
         self.actionYOLO_Resnet50 = QAction(MainWindow)
         self.actionYOLO_Resnet50.setObjectName(u"actionYOLO_Resnet50")
         self.actionYOLO_Resnet18 = QAction(MainWindow)
@@ -70,7 +75,7 @@ class Ui_MainWindow(object):
         self.imgLabel = QLabel(self.frame)
         self.imgLabel.setObjectName(u"imgLabel")
         self.imgLabel.setGeometry(QRect(210, 70, 811, 541))
-        self.imgLabel.setStyleSheet(u"background-color:rgba(255, 255, 255,0)")
+        # self.imgLabel.setStyleSheet(u"background-color:rgba(255, 255, 255,0)")
         self.closeBtn = QPushButton(self.frame)
         self.closeBtn.setObjectName(u"closeBtn")
         self.closeBtn.setGeometry(QRect(1070, 20, 16, 16))
@@ -107,6 +112,8 @@ class Ui_MainWindow(object):
         self.modelsCombo.addItem("")
         self.modelsCombo.setObjectName(u"modelsCombo")
         self.modelsCombo.setGeometry(QRect(10, 80, 131, 31))
+        self.modelsCombo.setStyleSheet(u"background-color: rgba(85, 255, 0,0);\n"
+"alternate-background-color: rgb(255, 255, 255);")
         MainWindow.setCentralWidget(self.frame)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -135,8 +142,8 @@ class Ui_MainWindow(object):
         self.closeBtn.setText(QCoreApplication.translate("MainWindow", u"X", None))
         self.minimalBtn.setText(QCoreApplication.translate("MainWindow", u"-", None))
         self.resultLabel.setText("")
-        self.modelsCombo.setItemText(0, QCoreApplication.translate("MainWindow", u"Resnet50", None))
-        self.modelsCombo.setItemText(1, QCoreApplication.translate("MainWindow", u"Resnet18", None))
+        self.modelsCombo.setItemText(0, QCoreApplication.translate("MainWindow", u"ResnetLarge", None))
+        self.modelsCombo.setItemText(1, QCoreApplication.translate("MainWindow", u"ResnetTiny", None))
         self.modelsCombo.setItemText(2, QCoreApplication.translate("MainWindow", u"MobileNetV3", None))
 
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))

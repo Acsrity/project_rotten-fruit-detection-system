@@ -34,16 +34,17 @@ from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import copy_attr, smart_inference_mode
 from utils.activations import *
 
+
 # For Resnet18
 class BasicBlock(nn.Module):
-    def __init__(self,in_channels,out_channels,stride=1,padding=1) -> None:
+    def __init__(self, in_channels, out_channels, stride=1, padding=1) -> None:
         super(BasicBlock, self).__init__()
 
         self.layer = nn.Sequential(
-            nn.Conv2d(in_channels,out_channels,kernel_size=3,stride=1,padding=padding,bias=False),
+            nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding=padding, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.SiLU(),
-            nn.Conv2d(out_channels,out_channels,kernel_size=3,stride=1,padding=padding,bias=False),
+            nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=padding, bias=False),
             nn.BatchNorm2d(out_channels)
         )
         self.shortcut = nn.Sequential()
@@ -60,6 +61,7 @@ class BasicBlock(nn.Module):
         out = torch.nn.functional.relu(out)
         return out
 
+
 # For Resnet50
 class BasicBlock_2(nn.Module):
     expansion = 4
@@ -69,13 +71,16 @@ class BasicBlock_2(nn.Module):
 
         width = int(out_channel * (width_per_group / 64.)) * groups
         # width=out_channel
-        self.conv1 = nn.Conv2d(in_channels=in_channel, out_channels=width,kernel_size=1, stride=1, bias=False)  # squeeze channels
+        self.conv1 = nn.Conv2d(in_channels=in_channel, out_channels=width, kernel_size=1, stride=1,
+                               bias=False)  # squeeze channels
         self.bn1 = nn.BatchNorm2d(width)
         # -----------------------------------------
-        self.conv2 = nn.Conv2d(in_channels=width, out_channels=width, groups=groups,kernel_size=3, stride=stride, bias=False, padding=1)
+        self.conv2 = nn.Conv2d(in_channels=width, out_channels=width, groups=groups, kernel_size=3, stride=stride,
+                               bias=False, padding=1)
         self.bn2 = nn.BatchNorm2d(width)
         # -----------------------------------------
-        self.conv3 = nn.Conv2d(in_channels=width, out_channels=out_channel * self.expansion,kernel_size=1, stride=1, bias=False)  # unsqueeze channels
+        self.conv3 = nn.Conv2d(in_channels=width, out_channels=out_channel * self.expansion, kernel_size=1, stride=1,
+                               bias=False)  # unsqueeze channels
         self.bn3 = nn.BatchNorm2d(out_channel * self.expansion)
 
         self.relu = nn.ReLU(inplace=True)
@@ -97,6 +102,39 @@ class BasicBlock_2(nn.Module):
         out += identity
         out = self.relu(out)
         return out
+
+
+class ResnetBlock(nn.Module):
+
+    def __init__(self,block_num, in_channel=64,channel=64):
+        super(ResnetBlock, self).__init__()
+        self.in_channel = in_channel  # conv1的输出维度
+        block = BasicBlock_2
+        self.layer = self._make_layer(block=block, channel=channel, block_num=block_num,
+                                      stride=1)  # H,W不变。downsample控制的shortcut，out_channel=64x4=256
+
+    def _make_layer(self, block, channel, block_num, stride=1):
+        downsample = None  # 用于控制shorcut路的
+        if stride != 1 or self.in_channel != channel * block.expansion:  # 对resnet50：conv2中特征图尺寸H,W不需要下采样/2，但是通道数x4，因此shortcut通道数也需要x4。对其余conv3,4,5，既要特征图尺寸H,W/2，又要shortcut维度x4
+            downsample = nn.Sequential(
+                nn.Conv2d(in_channels=self.in_channel, out_channels=channel * block.expansion, kernel_size=1,
+                          stride=stride, bias=False),  # out_channels决定输出通道数x4，stride决定特征图尺寸H,W/2
+                nn.BatchNorm2d(num_features=channel * block.expansion))
+
+        layers = []  # 每一个convi_x的结构保存在一个layers列表中，i={2,3,4,5}
+        layers.append(block(in_channel=self.in_channel, out_channel=channel, downsample=downsample,
+                            stride=stride))  # 定义convi_x中的第一个残差块，只有第一个需要设置downsample和stride
+        self.in_channel = channel * block.expansion  # 在下一次调用_make_layer函数的时候，self.in_channel已经x4
+
+        for _ in range(1, block_num):  # 通过循环堆叠其余残差块(堆叠了剩余的block_num-1个)
+            layers.append(block(in_channel=self.in_channel, out_channel=channel))
+
+        return nn.Sequential(*layers)  # '*'的作用是将list转换为非关键字参数传入
+
+    def forward(self, x):
+        x = self.layer(x)
+        return x
+
 
 # For mobilenetv3
 # Mobilenetv3Small
@@ -182,9 +220,6 @@ class MobileNetV3_InvertedResidual(nn.Module):
             return x + y
         else:
             return y
-
-
-
 
 
 def autopad(k, p=None, d=1):  # kernel, padding, dilation
